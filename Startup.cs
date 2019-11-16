@@ -1,11 +1,10 @@
 using ConfigurationValidation.Settings;
-using ConfigurationValidation.Settings.Validations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
+using ConfigurationValidation.Extensions;
 
 namespace ConfigurationValidation
 {
@@ -22,15 +21,12 @@ namespace ConfigurationValidation
         {
             services.AddControllers();
 
-            services.AddTransient<IStartupFilter, GlobalSettingsValidationFilter>();
+            // Extension method for adding the configuration startup filter
+            services.AddConfigurationValidation();
 
-            services.Configure<StripeSettings>(Configuration.GetSection("StripeConfig"));
-            services.AddSingleton(svc => svc.GetRequiredService<IOptions<StripeSettings>>().Value);
-            services.AddSingleton<ISettingsValidator>(svc => svc.GetRequiredService<IOptions<StripeSettings>>().Value);
-
-            services.Configure<SendgridSettings>(Configuration.GetSection("Sendgrid"));
-            services.AddSingleton(svc => svc.GetRequiredService<IOptions<SendgridSettings>>().Value);
-            services.AddSingleton<ISettingsValidator>(svc => svc.GetRequiredService<IOptions<SendgridSettings>>().Value);
+            // Calling extension methods for injecting the related services
+            services.ValidateConfiguration<StripeSettings>(Configuration.GetSection("StripeConfig"));
+            services.ValidateConfiguration<SendgridSettings>(Configuration.GetSection("Sendgrid"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
